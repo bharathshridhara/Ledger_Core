@@ -9,5 +9,7 @@ namespace LedgerCore.Data.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime DOB { get; set; }
+
+        public ICollection<Account> Accounts { get; set; }
     }
 }
