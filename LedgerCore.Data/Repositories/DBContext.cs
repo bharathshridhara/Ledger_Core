@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using LedgerCore.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +12,16 @@ namespace LedgerCore.Data.Repositories
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<User> Transactions { get; set; }
+        public DbSet<Currency> Currencies { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        public DBContext(DbContextOptions options) : base(options)
         {
-            optionsBuilder.UseSqlServer(
-                @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\admin\source\repos\LedgerCore\Ledger_Core\LedgerCore.Data\LedgerTest.mdf;Integrated Security=True;Connect Timeout=30");
+        }
+
+        public async Task<User> AuthenticateAsync(string username, string password)
+        {
+            return await Users.Where(user => user.Username.Equals(username) && user.Password.Equals(password)).FirstOrDefaultAsync();
         }
     }
 }

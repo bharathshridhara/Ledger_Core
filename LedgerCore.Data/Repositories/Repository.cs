@@ -16,7 +16,7 @@ namespace LedgerCore.Data.Repositories
         }
         public IEnumerable<T> GetAll<T>()
         {
-            
+            throw new NotImplementedException();
         }
 
         public DBEntity GetOne(Guid id)

@@ -13,6 +13,7 @@ namespace LedgerCore.Data.Entities
         public int Amount { get; set; }
         public Guid FromAccountId { get; set; }
         public Guid ToAccountId { get; set; }
+        public string Recipient { get; set; }
 
     }
 }
