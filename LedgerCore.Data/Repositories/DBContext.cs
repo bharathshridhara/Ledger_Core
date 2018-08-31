@@ -19,9 +19,9 @@ namespace LedgerCore.Data.Repositories
         {
         }
 
-        public async Task<User> AuthenticateAsync(string username, string password)
+        public async Task<User> AuthenticateAsync(string email, string password)
         {
-            return await Users.Where(user => user.Username.Equals(username) && user.Password.Equals(password)).FirstOrDefaultAsync();
+            return await Users.Where(user => user.Email.Equals(email) && user.Password.Equals(password)).FirstOrDefaultAsync();
         }
     }
 }

@@ -17,9 +17,5 @@ namespace LedgerCore.Controllers
             _dbContext = dbContext;
         }
 
-        bool Authenticate(string username, string password)
-        {
-
-        }
     }
 }

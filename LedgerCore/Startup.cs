@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Swagger;
+using AutoMapper;
 
 namespace LedgerCore
 {
@@ -28,9 +30,15 @@ namespace LedgerCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper();
             services.AddDbContext<DBContext>(options => 
                 options.UseSqlServer(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\admin\source\repos\LedgerCore\Ledger_Core\LedgerCore.Data\LedgerTest.mdf;Integrated Security=True;Connect Timeout=30"));
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                
+            }).AddJwtBearer(options =>
                 options.TokenValidationParameters
                     = new TokenValidationParameters
                     {
@@ -42,6 +50,10 @@ namespace LedgerCore
                         ValidAudience = "yourdomain.com",
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF32.GetBytes("Mba287xd!"))
                     });
+            
+            services.AddSwaggerGen(options =>
+                options.SwaggerDoc(name: "v1", info: new Info {Title = "LedgerCoreAPI", Version = "v1"}));
+            
             services.AddMvc();
         }
 
@@ -54,6 +66,8 @@ namespace LedgerCore
             }
 
             app.UseAuthentication();
+            app.UseSwagger();
+            app.UseSwaggerUI();
             app.UseMvc();
         }
     }

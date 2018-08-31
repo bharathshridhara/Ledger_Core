@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace LedgerCore.ViewModels
 {
-    public class LoginUserDTO : IValidatableObject
+    public class LoginUserDTO : BaseDto, IValidatableObject
     {
         [Required]
-        public string Username { get; set; }
+        public string Email { get; set; }
         [Required]
         public string Password { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             var loginUser = validationContext.ObjectInstance as LoginUserDTO;
-            if(loginUser != null && (string.IsNullOrEmpty(loginUser.Username) || string.IsNullOrEmpty(loginUser.Password)))
+            if(loginUser != null && (string.IsNullOrEmpty(loginUser.Email) || string.IsNullOrEmpty(loginUser.Password)))
                 return new List<ValidationResult>
                 {
                     new ValidationResult(

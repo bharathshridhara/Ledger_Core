@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LedgerCore.Data.Entities;
 using LedgerCore.Data.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LedgerCore.Controllers
 {
     [Produces("application/json")]
+    [Authorize]
     [Route("api/Accounts")]
     public class AccountsController : Controller
     {
