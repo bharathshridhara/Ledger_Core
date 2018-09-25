@@ -16,6 +16,9 @@ namespace LedgerCore.Helpers
         public MappingProfile()
         {
             CreateMap<UserDTO, User>().ReverseMap();
+            CreateMap<AccountDTO, Account>().ReverseMap();
+            CreateMap<TransactionDTO, Transaction>().ReverseMap();
+            Mapper.Initialize(cfg => cfg.AddProfile(this));
         }
     }
 }

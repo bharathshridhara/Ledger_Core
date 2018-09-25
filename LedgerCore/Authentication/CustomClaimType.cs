@@ -7,7 +7,7 @@ namespace LedgerCore.Authentication
 {
     public class CustomClaimType
     {
-        public static string USER_EMAIL = "UserEmail";
-        public static string USER_ID = "UserId";
+        public static string USER_EMAIL = "Email";
+        public static string USER_ID = "User_Id";
     }
 }

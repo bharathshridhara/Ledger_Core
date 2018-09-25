@@ -12,8 +12,8 @@ using System;
 namespace LedgerCore.Data.Migrations
 {
     [DbContext(typeof(DBContext))]
-    [Migration("20180831062215_A")]
-    partial class A
+    [Migration("20180918050004_Third")]
+    partial class Third
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -27,8 +27,7 @@ namespace LedgerCore.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Created");
 
                     b.Property<Guid>("CurrencyId");
 
@@ -37,10 +36,9 @@ namespace LedgerCore.Data.Migrations
 
                     b.Property<float>("InterestRate");
 
-                    b.Property<DateTime>("Modified")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Modified");
 
-                    b.Property<Guid>("ModifiedBy");
+                    b.Property<string>("ModifiedBy");
 
                     b.Property<string>("Name");
 
@@ -60,13 +58,11 @@ namespace LedgerCore.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Created");
 
-                    b.Property<DateTime>("Modified")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Modified");
 
-                    b.Property<Guid>("ModifiedBy");
+                    b.Property<string>("ModifiedBy");
 
                     b.Property<string>("Name");
 
@@ -82,27 +78,24 @@ namespace LedgerCore.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<Guid?>("AccountId");
+                    b.Property<Guid>("AccountId");
 
                     b.Property<int>("Amount");
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Created");
 
                     b.Property<string>("Description");
 
-                    b.Property<Guid>("FromAccountId");
+                    b.Property<DateTime>("Modified");
 
-                    b.Property<DateTime>("Modified")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<string>("ModifiedBy");
 
-                    b.Property<Guid>("ModifiedBy");
-
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .IsRequired();
 
                     b.Property<string>("Recipient");
 
-                    b.Property<Guid>("ToAccountId");
+                    b.Property<Guid?>("ToAccountId");
 
                     b.Property<int>("Type");
 
@@ -110,7 +103,7 @@ namespace LedgerCore.Data.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.ToTable("Transaction");
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("LedgerCore.Data.Entities.User", b =>
@@ -120,8 +113,7 @@ namespace LedgerCore.Data.Migrations
 
                     b.Property<Guid>("ClientId");
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Created");
 
                     b.Property<DateTime>("DOB");
 
@@ -131,16 +123,15 @@ namespace LedgerCore.Data.Migrations
 
                     b.Property<string>("LastName");
 
-                    b.Property<DateTime>("Modified")
-                        .ValueGeneratedOnAddOrUpdate();
+                    b.Property<DateTime>("Modified");
 
-                    b.Property<Guid>("ModifiedBy");
+                    b.Property<string>("ModifiedBy");
 
                     b.Property<string>("Password");
 
                     b.HasKey("Id");
 
-                    b.ToTable("User");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("LedgerCore.Data.Entities.Account", b =>
@@ -158,9 +149,10 @@ namespace LedgerCore.Data.Migrations
 
             modelBuilder.Entity("LedgerCore.Data.Entities.Transaction", b =>
                 {
-                    b.HasOne("LedgerCore.Data.Entities.Account")
+                    b.HasOne("LedgerCore.Data.Entities.Account", "Account")
                         .WithMany("Transactions")
-                        .HasForeignKey("AccountId");
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
         }

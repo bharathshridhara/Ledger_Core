@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 using LedgerCore.Data.Constants;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using LedgerCore.Data.Entities;
 
-namespace LedgerCore.Data.Entities
+namespace LedgerCore.ViewModels
 {
-    public class Transaction : DBEntity
+    public class TransactionDTO :BaseDto
     {
         [Required]
         public string Name { get; set; }
@@ -22,6 +22,5 @@ namespace LedgerCore.Data.Entities
         public virtual Account Account { get; set; }
         public Guid? ToAccountId { get; set; }
         public string Recipient { get; set; }
-
     }
 }

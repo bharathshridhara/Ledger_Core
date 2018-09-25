@@ -6,15 +6,14 @@ using Microsoft.Data.OData.Query.SemanticAst;
 
 namespace LedgerCore.ViewModels
 {
-    public class BaseDto
+    public abstract class BaseDto
     {
-        public List<Link> Links { get; set; }
+        public Guid Id { get; set; }
+        public List<Link> _links { get; set; } = new
+            List<Link>();
 
         public BaseDto()
         {
-            Links = new List<Link>();
         }
     }
-
-    
 }

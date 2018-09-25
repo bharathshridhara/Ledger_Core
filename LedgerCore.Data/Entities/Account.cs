@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace LedgerCore.Data.Entities
 {
@@ -15,7 +17,8 @@ namespace LedgerCore.Data.Entities
         public virtual Currency Currency { get; set; }
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
-        public ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; }
+
         public float InterestRate { get; set; }
 
     }

@@ -12,8 +12,9 @@ namespace LedgerCore.ViewModels
         public string Method { get; set; }
     }
 
-    public class LinkHelper
+    public class LinkHelper<T> where T:class
     {
         public List<Link> Links { get; set; }
+        public T Value { get; set; }
     }
 }

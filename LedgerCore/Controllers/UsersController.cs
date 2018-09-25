@@ -2,53 +2,71 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms.Design;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LedgerCore.Data.Entities;
 using LedgerCore.Data.Repositories;
+using LedgerCore.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace LedgerCore.Controllers
 {
     [Produces("application/json")]
     [Route("api/Users")]
+    [Authorize]
     public class UsersController : Controller
     {
         private readonly DBContext _context;
+        private IUrlHelper _urlHelper;
 
-        public UsersController(DBContext context)
+        public UsersController(DBContext context, IUrlHelper urlHelper)
         {
             _context = context;
+            _urlHelper = urlHelper;
         }
 
         // GET: api/Users
-        [HttpGet]
-        public IEnumerable<User> GetUsers()
+        [HttpGet(Name="get-users")]
+        public async Task<IActionResult> GetUsers()
         {
-            return _context.Users;
+            var users = _context.Users;
+            var usersModel = new List<UserDTO>();
+            foreach (var user in users)
+            {
+                var uservm = Mapper.Map<UserDTO>(user);
+                usersModel.Add(uservm);
+            }
+            
+                PopulateLinks(usersModel);
+                return Ok(new LinkHelper<IEnumerable<UserDTO>> { Value = usersModel});
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser([FromRoute] Guid id)
+        [HttpGet(template: "{id}", Name="get-user")]
+        public async Task<IActionResult> GetUser([FromRoute] string id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == id);
-
+            var gid = new Guid(id);
+            var user = await _context.Users.SingleOrDefaultAsync(m => m.Id == gid);
+            var userDto = Mapper.Map<UserDTO>(user);
             if (user == null)
             {
                 return NotFound();
             }
-
-            return Ok(user);
+            PopulateLinks(userDto, userDto.Id.ToString());
+            return Ok(userDto);
         }
 
         // PUT: api/Users/5
-        [HttpPut("{id}")]
+        [HttpPut(template:"{id}", Name = "update-user")]
         public async Task<IActionResult> PutUser([FromRoute] Guid id, [FromBody] User user)
         {
             if (!ModelState.IsValid)
@@ -82,21 +100,6 @@ namespace LedgerCore.Controllers
             return NoContent();
         }
 
-        // POST: api/Users
-        [HttpPost]
-        public async Task<IActionResult> PostUser([FromBody] User user)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
-        }
-
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
@@ -121,6 +124,29 @@ namespace LedgerCore.Controllers
         private bool UserExists(Guid id)
         {
             return _context.Users.Any(e => e.Id == id);
+        }
+
+        private void PopulateLinks(IEnumerable<UserDTO> dtos)
+        {
+            foreach (var item in dtos)
+            {
+                PopulateLinks(item);
+            }
+        }
+
+        private void PopulateLinks(UserDTO dto, string userId = null)
+        {
+            var rel = "get-user";
+            if (!string.IsNullOrEmpty(userId) && dto.Id.ToString() == userId)
+            {
+                rel = "self";
+            }
+            
+            dto._links = new List<Link>
+            {
+                new Link{Method = "GET", Url = _urlHelper.Action("GetUser", new {id = dto.Id}), Rel=rel },
+                new Link{Method = "POST", Url = _urlHelper.Action("PutUser"), Rel="update-user"}
+            };
         }
     }
 }

@@ -48,9 +48,9 @@ namespace LedgerCore.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] UserDTO user)
         {
-            var existinguser = await _dbContext.Users.FindAsync(new {user.Email});
+            var existinguser = await _dbContext.Users.Where(u => u.Email.Equals(user.Email)).FirstOrDefaultAsync();
             if (existinguser != null)
-                BadRequest("Email already exists");
+                return BadRequest("Email already exists");
 
             var userModel = Mapper.Map<User>(user);
             var result =  _dbContext.Users.AddAsync(userModel);
@@ -58,7 +58,7 @@ namespace LedgerCore.Controllers
             var token = _authProvider.GenerateNewToken(userModel);
             await result;
             await _dbContext.SaveChangesAsync();
-            return Ok(token);
+            return Ok(new {token = token, expiry = "30 minutes"});
         }
 
         [HttpPost]
@@ -71,7 +71,12 @@ namespace LedgerCore.Controllers
             var user = await _dbContext.AuthenticateAsync(loginUser.Email, loginUser.Password);
             if (user != null)
             {
-                return Ok(_authProvider.GenerateNewToken(user));
+                return Ok(new
+                {
+                    token = _authProvider.GenerateNewToken(user), expiry = "30 minutes",
+                    userId = user.Id.ToString()
+                });
+
             }
             else
             {

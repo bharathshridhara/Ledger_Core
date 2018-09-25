@@ -14,12 +14,13 @@ namespace LedgerCore.Data.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        
+        [Required]
         public DateTime Created { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Required]
         public DateTime Modified { get; set; }
 
-        public Guid ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; }
     }
 }

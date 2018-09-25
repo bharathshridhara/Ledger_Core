@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using LedgerCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LedgerCore.Data.Entities;
 using LedgerCore.Data.Repositories;
+using LedgerCore.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 
 namespace LedgerCore.Controllers
@@ -14,24 +17,38 @@ namespace LedgerCore.Controllers
     [Produces("application/json")]
     [Authorize]
     [Route("api/Accounts")]
-    public class AccountsController : Controller
+    public class AccountsController : BaseController
     {
-        private readonly DBContext _context;
-
-        public AccountsController(DBContext context)
+        public AccountsController(DBContext context, IUrlHelper urlHelper) : base(context, urlHelper)
         {
-            _context = context;
+            
         }
 
         // GET: api/Accounts
-        [HttpGet]
-        public IEnumerable<Account> GetAccounts()
+        [HttpGet( Name ="get-accounts")]
+        public async Task<IActionResult> GetAccounts()
         {
-            return _context.Accounts;
+            var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimType.USER_ID)?.Value;
+            var accountsModel = await _dbContext.Accounts.Where(a => a.UserId == Guid.Parse(userId)).ToListAsync();
+            var accountsDto = new List<AccountDTO>();
+            if (accountsModel != null)
+            {
+                foreach (var account in accountsModel)
+                {
+                    var accountDTO = Mapper.Map<AccountDTO>(account);
+                    accountsDto.Add(accountDTO);
+                }
+            }
+
+            PopulateLinks(accountsDto);
+
+            return Ok(accountsDto);
+
+
         }
 
         // GET: api/Accounts/5
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "get-account")]
         public async Task<IActionResult> GetAccount([FromRoute] Guid id)
         {
             if (!ModelState.IsValid)
@@ -39,7 +56,7 @@ namespace LedgerCore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var account = await _context.Accounts.SingleOrDefaultAsync(m => m.Id == id);
+            var account = await _dbContext.Accounts.SingleOrDefaultAsync(m => m.Id == id);
 
             if (account == null)
             {
@@ -63,11 +80,11 @@ namespace LedgerCore.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(account).State = EntityState.Modified;
+            _dbContext.Entry(account).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -86,15 +103,29 @@ namespace LedgerCore.Controllers
 
         // POST: api/Accounts
         [HttpPost]
-        public async Task<IActionResult> PostAccount([FromBody] Account account)
+        
+        public async Task<IActionResult> PostAccount([FromBody] AccountDTO account)
         {
+            var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimType.USER_ID)?.Value;
+            if (string.IsNullOrEmpty(userId) || Guid.Parse(userId) != account.UserId)
+                return Unauthorized();
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Accounts.Add(account);
-            await _context.SaveChangesAsync();
+            var currency = await _dbContext.Currencies.FirstOrDefaultAsync(c => c.Symbol == account.CurrencyISO);
+            if (currency == null)
+            {
+                _dbContext.Currencies.Add(new Currency
+                {
+                    Name = account.CurrencyISO,
+                    Symbol = "$"
+                });
+            }
+            _dbContext.Accounts.Add(Mapper.Map<Account>(account));
+            await _dbContext.SaveChangesAsync();
 
             return CreatedAtAction("GetAccount", new { id = account.Id }, account);
         }
@@ -108,21 +139,50 @@ namespace LedgerCore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var account = await _context.Accounts.SingleOrDefaultAsync(m => m.Id == id);
+            var account = await _dbContext.Accounts.SingleOrDefaultAsync(m => m.Id == id);
             if (account == null)
             {
                 return NotFound();
             }
 
-            _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+            _dbContext.Accounts.Remove(account);
+            await _dbContext.SaveChangesAsync();
 
             return Ok(account);
         }
 
         private bool AccountExists(Guid id)
         {
-            return _context.Accounts.Any(e => e.Id == id);
+            return _dbContext.Accounts.Any(e => e.Id == id);
+        }
+
+        private void PopulateLinks(IEnumerable<AccountDTO> dtos)
+        {
+            foreach (var item in dtos)
+            {
+                PopulateLinks(item);
+            }
+        }
+
+        private void PopulateLinks(AccountDTO dto, string id = null)
+        {
+            var rel = "get-account";
+            if (!string.IsNullOrEmpty(id) && dto.Id.ToString() == id)
+            {
+                rel = "self";
+            }
+
+            dto.TransactionsURL = new Link
+            {
+                Method = "GET",
+                //Url = _urlHelper.Action("GetTransaction", "Transactions", new {id = dto.Id}),
+                Rel = "get-transactions"
+            };
+            dto._links = new List<Link>
+            {
+                new Link{Method = "GET", Url = _urlHelper.Action("GetAccount", new {id = dto.Id}), Rel=rel },
+                new Link{Method = "POST", Url = _urlHelper.Action("PostAccount"), Rel="update-user"}
+            };
         }
     }
 }
