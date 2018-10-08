@@ -25,7 +25,8 @@ namespace LedgerCore.Controllers
         {
 
         }
-
+        // GET: api/Transactions
+        [HttpGet(Name = "get-all-transactions-for-user")]
         public async Task<IActionResult> GetTransactions()
         {
             var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimType.USER_ID)?.Value;

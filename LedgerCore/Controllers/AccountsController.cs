@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using CacheCow.Server.Core.Mvc;
 using LedgerCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ namespace LedgerCore.Controllers
 
         // GET: api/Accounts
         [HttpGet( Name ="get-accounts")]
+        [HttpCacheFactory(300)]
         public async Task<IActionResult> GetAccounts()
         {
             var userId = HttpContext.User.Claims.FirstOrDefault(c => c.Type == CustomClaimType.USER_ID)?.Value;

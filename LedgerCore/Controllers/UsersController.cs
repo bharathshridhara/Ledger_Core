@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms.Design;
 using AutoMapper;
+using CacheCow.Server.Core.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using LedgerCore.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Azure.KeyVault;
 
 namespace LedgerCore.Controllers
 {
@@ -32,6 +34,7 @@ namespace LedgerCore.Controllers
 
         // GET: api/Users
         [HttpGet(Name="get-users")]
+        [HttpCacheFactory(300)]
         public async Task<IActionResult> GetUsers()
         {
             var users = _context.Users;

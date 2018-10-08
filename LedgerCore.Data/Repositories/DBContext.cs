@@ -60,6 +60,7 @@ namespace LedgerCore.Data.Repositories
                 {
                     ((DBEntity)entity.Entity).Modified = DateTime.Now.ToUniversalTime();
                 }
+                
                 var name = User?.Identity?.Name;
                 if (string.IsNullOrEmpty(name))
                     ((DBEntity) entity.Entity).ModifiedBy = "Anonymous";

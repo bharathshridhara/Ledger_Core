@@ -15,6 +15,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Swagger;
 using AutoMapper;
+using CacheCow.Server;
+using CacheCow.Server.Core.Mvc;
 using LedgerCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Serilog;
 
 namespace LedgerCore
 {
@@ -64,27 +67,28 @@ namespace LedgerCore
             
             services.AddSwaggerGen(options =>
                 options.SwaggerDoc(name: "v1", info: new Info {Title = "LedgerCoreAPI", Version = "v1"}));
-
+            services.AddLogging(options => options.AddSerilog());
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddSingleton<IUrlHelper, UrlHelper>(implementationFactory =>
             {
                 var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
                 return new UrlHelper(actionContext);
             });
-
+            services.AddHttpCachingMvc();
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory factory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseAuthentication();
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LedgerCoreAPI V1"));
             app.UseMvc();
         }
     }
